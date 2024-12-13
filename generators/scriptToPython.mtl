@@ -1,0 +1,87 @@
+[comment encoding = UTF-8 /]
+[module scriptToPython('http://www.example.org/script')]
+
+[template public scriptToPython(aScript : Script)]
+[comment @main/]
+[file (aScript.name + '.py', false, 'UTF-8')]
+[let inps : OrderedSet(Input) = aScript.getInputs()]
+def [aScript.name/]([inputSetToFunctionArgs(inps)/]):
+[/let]
+[let cs : OrderedSet(Constant) = aScript.getConstants()]
+[for (c : Constant | cs)]
+	[c.name/] = [c.value/]
+[/for]
+[/let]
+[let op : Operation = getParentOperation(aScript.getOutput())]
+	return [operationToPython(op)/]
+[/let]
+[/file]
+[/template]
+
+
+[template public inputSetToFunctionArgs(inps : OrderedSet(Input)) post (trim())]
+[for (inpName : String | getInputsNames(inps)) separator(', ')][inpName/][/for]
+[/template]
+
+[template public operationToPython(op : Operation) post (trim())]
+[let inps : OrderedSet(InternalInput) = getInternalInputs(op)]
+[if op.infix]
+([for (inp : InternalInput | inps) separator(' ' + op.name + ' ')]
+[if inp.variable.oclIsTypeOf(Constant)]
+[inp.variable.name/][else]
+[if inp.variable.oclIsTypeOf(Input)]
+[inp.variable.name/][else]
+[operationToPython(getParentOperation(inp.variable.oclAsType(InternalOutput)))/][/if]
+[/if]
+[/for])
+[else]
+[op.name/]([internalInputSetToOperatorArgs(inps)/])
+[/if]
+[/let]
+[/template]
+
+[template public internalInputSetToOperatorArgs(inps : OrderedSet(InternalInput)) post (trim())]
+[for (inp : InternalInput | inps) separator(', ')]
+[if inp.variable.oclIsTypeOf(Constant)]
+[inp.variable.name/][else]
+[if inp.variable.oclIsTypeOf(Input)]
+[inp.variable.name/][else]
+[operationToPython(getParentOperation(inp.variable.oclAsType(InternalOutput)))/][/if]
+[/if]
+[/for]
+[/template]
+
+[comment formatting/]
+[query public getInternalInputsNames(inps: OrderedSet(InternalInput)) : OrderedSet(String) =
+	inps->collect(variable.name)->asOrderedSet()
+/]
+
+[query public getInputsNames(inps: OrderedSet(Input)) : OrderedSet(String) =
+	inps->collect(name)->asOrderedSet()
+/]
+
+
+[comment components/]
+[query public getInternalInputs(op: Operation) : OrderedSet(InternalInput) =
+	op.inputs->asOrderedSet()
+/]
+
+[query public getInputs(s: Script) : OrderedSet(Input) =
+	s.inputs->asOrderedSet()
+/]
+
+[query public getOutput(s: Script) : Output =
+	s.output
+/]
+
+[query public getConstants(s: Script) : OrderedSet(Constant) =
+	s.constants
+/]
+
+[query public getParentOperation(o: Output) : Operation =
+	o.internalOutput.operation
+/]
+
+[query public getParentOperation(o: InternalOutput) : Operation =
+	o.operation
+/]
