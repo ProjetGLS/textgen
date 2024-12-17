@@ -1,0 +1,45 @@
+[comment encoding = UTF-8 /]
+[module toCSV('http://www.example.org/library')]
+
+
+[template public toCSV(aLibrary : Library)]
+[comment @main/]
+[file (aLibrary.name + '.csv', false, 'UTF-8')]
+[let cds : OrderedSet(ColumnData) = aLibrary.getAllColumn() ] 
+[let cdd : ColumnData = aLibrary.getAColumn()]
+[let idbs : OrderedSet(IdentBlock) = cdd.getAllIdData()]
+[for (idb : IdentBlock | idbs)]
+[let j : Integer = i]
+[for (cd : ColumnData | cds) separator(',')][cd.toCSV(j)/][/for]
+[/let]	
+[/for]
+[/let]
+[/let]
+[/let]
+[/file]
+[/template]
+
+[query public getAllColumn(l: Library) : OrderedSet(ColumnData) = 
+	l.data->asOrderedSet()
+/]
+
+[query public getAColumn(l: Library) : ColumnData = 
+	l.data->first()
+/]
+
+[query public getAllIdData(c: ColumnData) : OrderedSet(IdentBlock) = 
+	c.identBlocks->select( e | e.oclIsTypeOf(IdentBlock) )
+		->collect( e | e.oclAsType(IdentBlock) )
+		->asOrderedSet()
+/]
+
+[query public getAllData(c: ColumnData) : OrderedSet(Block) = 
+	c.blocks->select( e | e.oclIsTypeOf(Block) )
+		->collect( e | e.oclAsType(Block) )
+		->asOrderedSet()
+/]
+
+
+[template public toCSV(cd : ColumnData,j : Integer) post (trim()) ]
+[let idDatas : OrderedSet(IdentBlock) = cd.getAllIdData() ][if (idDatas->size() >= j)][for (idData : IdentBlock | idDatas)][if i = j][idData.idValue/][/if][/for][/if][let datas : OrderedSet(Block) = cd.getAllData() ][if (datas->size() + idDatas->size() >= j)][for (data : Block | datas)][if i + idDatas->size() = j][data.value/][/if][/for][/if][/let][/let]
+[/template]
