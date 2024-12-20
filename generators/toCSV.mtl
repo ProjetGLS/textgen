@@ -5,13 +5,13 @@
 [template public toCSV(aLibrary : Library)]
 [comment @main/]
 [file (aLibrary.name + '.csv', false, 'UTF-8')]
-[let cds : OrderedSet(ColumnData) = aLibrary.getAllColumn() ] 
+[let cds : OrderedSet(ColumnData) = aLibrary.getAllColumn() ]
 [let cdd : ColumnData = aLibrary.getAColumn()]
 [let idbs : OrderedSet(IdentBlock) = cdd.getAllIdData()]
 [for (idb : IdentBlock | idbs)]
 [let j : Integer = i]
 [for (cd : ColumnData | cds) separator(',')][cd.toCSV(j)/][/for]
-[/let]	
+[/let]
 [/for]
 [/let]
 [/let]
@@ -19,21 +19,21 @@
 [/file]
 [/template]
 
-[query public getAllColumn(l: Library) : OrderedSet(ColumnData) = 
+[query public getAllColumn(l: Library) : OrderedSet(ColumnData) =
 	l.data->asOrderedSet()
 /]
 
-[query public getAColumn(l: Library) : ColumnData = 
+[query public getAColumn(l: Library) : ColumnData =
 	l.data->first()
 /]
 
-[query public getAllIdData(c: ColumnData) : OrderedSet(IdentBlock) = 
+[query public getAllIdData(c: ColumnData) : OrderedSet(IdentBlock) =
 	c.identBlocks->select( e | e.oclIsTypeOf(IdentBlock) )
 		->collect( e | e.oclAsType(IdentBlock) )
 		->asOrderedSet()
 /]
 
-[query public getAllData(c: ColumnData) : OrderedSet(Block) = 
+[query public getAllData(c: ColumnData) : OrderedSet(Block) =
 	c.blocks->select( e | e.oclIsTypeOf(Block) )
 		->collect( e | e.oclAsType(Block) )
 		->asOrderedSet()
